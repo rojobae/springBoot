@@ -1,25 +1,27 @@
 package web.controllers;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import web.models.User;
 import web.services.UserService;
+
+import java.security.Principal;
 
 
 @Controller
-@RequestMapping("/user")
+@RequestMapping("/user/")
 public class UserController {
 
     @Autowired
     private UserService userService;
 
-    @GetMapping(value = "/")
-    public String getUserPage(Model model) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        model.addAttribute("user", userService.loadUserByUsername(auth.getName()));
+    @GetMapping()
+    public String getUserPage(Model model, Principal principal) {
+        User user = userService.getUserByUsername(principal.getName());
+        model.addAttribute("message", "You are logged in as " + principal.getName());
+        model.addAttribute("userInfo", user);;
         return "user/index";
     }
 }

@@ -70,6 +70,17 @@ public class User implements UserDetails {
         this.roles = roles;
     }
 
+    public User(int id, String firstName, String lastName, int age, String email, String username, String password, Set<Role> roles) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.age = age;
+        this.email = email;
+        this.username = username;
+        this.password = password;
+        this.roles = roles;
+    }
+
     public int getId() {
         return id;
     }

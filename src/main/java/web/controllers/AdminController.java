@@ -1,21 +1,22 @@
 package web.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import web.models.Role;
 import web.models.User;
 import web.services.RoleService;
 import web.services.UserService;
 
-import javax.validation.Valid;
+import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
 
 @Controller
-@RequestMapping("/admin")
+@RequestMapping("/admin/")
 public class AdminController {
 
     @Autowired
@@ -24,65 +25,59 @@ public class AdminController {
     @Autowired
     private RoleService roleService;
 
-    @GetMapping("/")
-    public String index(Model model) {
+    @Autowired
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @GetMapping()
+    public String showAllUsers(Model model, Principal principal) {
         model.addAttribute("users", userService.getAllUsers());
+        User user = userService.getUserByUsername(principal.getName());
+        model.addAttribute("userInfo", user);
+        model.addAttribute("newUser", new User());
+        model.addAttribute("roles", roleService.getAllRoles());
         return "admin/index";
     }
 
-    @GetMapping("/new")
-    public String newUser(@ModelAttribute("user") User user) {
-        return "admin/addUser";
-    }
-
-    @PostMapping
-    public String createUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult,
-                             @RequestParam(required = false) String roleAdmin) {
-        if (bindingResult.hasErrors()) {
-            return "admin/addUser";
+    @PostMapping(value = "saveUser")
+    public String saveUser(@ModelAttribute("newUser") User user, @RequestParam(value = "role", required = false) String[] role) {
+        Set<Role> roleSet = new HashSet<>();
+        for (String roles : role) {
+            roleSet.add(roleService.getRoleById(Integer.parseInt(roles)));
         }
-        Set<Role> roles = new HashSet<>();
-        roles.add(roleService.getRoleByName("ROLE_USER"));
-        if (roleAdmin != null) {
-            roles.add(roleService.getRoleByName("ROLE_ADMIN"));
-        }
-        user.setRoles(roles);
+        user.setRoles(roleSet);
+        user.setPassword(passwordEncoder().encode(user.getPassword()));
         userService.addUser(user);
         return "redirect:/admin/";
     }
 
-    @GetMapping("/{id}/edit")
-    public String editUser(@PathVariable("id") int id, Model model) {
-        User user = userService.getUserById(id);
-        Set<Role> roles = user.getRoles();
-        for (Role role: roles) {
-            if (role.equals(roleService.getRoleByName("ROLE_ADMIN"))) {
-                model.addAttribute("roleAdmin", true);
-            }
+    @PostMapping(value = "updateUser")
+    public String updateUser(@ModelAttribute User userEdit, @RequestParam(value = "role", required = false) String[] role,
+                             @RequestParam(value = "id", required = false) int id,
+                             @RequestParam(value = "lastName", required = false) String lastName,
+                             @RequestParam(value = "password", required = false) String password,
+                             @RequestParam(value = "email", required = false) String email,
+                             @RequestParam(value = "age", required = false) int age,
+                             @RequestParam(value = "firstName", required = false) String firstName) {
+        Set<Role> roleSet = new HashSet<>();
+        for (String roles : role) {
+            roleSet.add(roleService.getRoleById(Integer.parseInt(roles)));
         }
-        model.addAttribute("user", user);
-        return "admin/editUser";
-    }
-
-    @PatchMapping("/{id}")
-    public String updateUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult,
-                             @PathVariable("id") int id,
-                             @RequestParam(required = false) String roleAdmin) {
-        if (bindingResult.hasErrors()) {
-            return "admin/editUser";
-        }
-        Set<Role> roles = new HashSet<>();
-        roles.add(roleService.getRoleByName("ROLE_USER"));
-        if (roleAdmin != null) {
-            roles.add(roleService.getRoleByName("ROLE_ADMIN"));
-        }
-        user.setRoles(roles);
-        userService.updateUser(user);
+        userEdit.setRoles(roleSet);
+        userEdit.setId(id);
+        userEdit.setFirstName(firstName);
+        userEdit.setLastName(lastName);
+        userEdit.setPassword(password);
+        userEdit.setAge(age);
+        userEdit.setEmail(email);
+        userEdit.setPassword(passwordEncoder().encode(userEdit.getPassword()));
+        userService.updateUser(userEdit);
         return "redirect:/admin/";
     }
 
-    @DeleteMapping("/{id}")
-    public String removeUser(@PathVariable("id") int id) {
+    @PostMapping("deleteUser/{id}")
+    public String deleteUser(@PathVariable("id") int id) {
         userService.removeUser(id);
         return "redirect:/admin/";
     }
