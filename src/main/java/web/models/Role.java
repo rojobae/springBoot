@@ -1,6 +1,8 @@
 package web.models;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
@@ -19,14 +21,20 @@ public class Role implements GrantedAuthority {
     private String name;
 
     @ManyToMany(mappedBy = "roles")
+    @Transient
+    @JsonIgnore
     private Set<User> users;
 
     public Role() {
     }
 
-    public Role(int id, String name) {
-        this.id = id;
-        this.name = name;
+    public Role(String roleName) {
+        if (roleName.contains("ROLE_ADMIN")) {
+            this.id = 1;
+        } else if (roleName.contains("ROLE_USER")) {
+            this.id = 2;
+        }
+        this.name = roleName;
     }
 
     public int getId() {
@@ -57,4 +65,5 @@ public class Role implements GrantedAuthority {
     public String getAuthority() {
         return name;
     }
+
 }
