@@ -1,49 +1,45 @@
 package web.controllers;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import web.models.User;
-import web.services.RoleService;
 import web.services.UserService;
 
-import java.security.Principal;
 import java.util.List;
 
 
 @RestController
+@RequestMapping("/rest")
 public class RestAPIController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    @Autowired
-    private RoleService roleService;
-
-    @GetMapping("/admin/users")
-    public List<User> list() {
-        return userService.getAllUsers();
+    public RestAPIController(UserService userService) {
+        this.userService = userService;
     }
 
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
+    }
 
-    @PostMapping("/admin/usersAdd")
-    public void add(@RequestBody User user) {
+    @PostMapping("/users")
+    public ResponseEntity<?> addUser(@RequestBody User user) {
         userService.addUser(user);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PutMapping("/admin/usersEdit")
-    public void update(@RequestBody User user) {
+    @PutMapping("/users/{id}")
+    public ResponseEntity<?> updateUser(@RequestBody User user) {
         userService.updateUser(user);
+        return ResponseEntity.ok().body(user);
     }
 
-    @DeleteMapping("/admin/usersDelete/{id}")
-    public void delete(@PathVariable Integer id) {
-        userService.removeUser(id);
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<User> deleteUser(@PathVariable long id) {
+        userService.deleteUser(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
-
-    @GetMapping("/user/userGet")
-    public User getCurrentUser(Principal principal) {
-        return userService.getUserByUsername(principal.getName());
-    }
-
 }

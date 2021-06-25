@@ -12,8 +12,8 @@
 <body>
 
 <nav class="navbar navbar-dark bg-dark">
-    <div th:each="role : ${userInfo.roles}"
-         th:text="${userInfo.email} + ' with roles: ' + ${#strings.replace((role.role), 'ROLE_', '')}"
+    <div th:each="role : ${userDetails.getRoles()}"
+         th:text="${userDetails.getUsername()} + ' with roles: ' + ${#strings.replace((role.role), 'ROLE_', '')}"
          class="navbar-brand inline" id="str">
     </div>
     <div>
@@ -52,13 +52,22 @@
                                         <th>ID</th>
                                         <th>First Name</th>
                                         <th>Last Name</th>
-                                        <th>Username</th>
                                         <th>Age</th>
                                         <th>Email</th>
                                         <th>Role</th>
                                     </tr>
                                     </thead>
-                                    <tbody id="getUser" class="font-weight-normal"></tbody>
+                                    <tbody class="font-weight-normal">
+                                    <tr>
+                                        <td th:text="${userDetails.getId()}"></td>
+                                        <td th:text="${userDetails.getFirstName()}"></td>
+                                        <td th:text="${userDetails.getLastName()}"></td>
+                                        <td th:text="${userDetails.getAge()}"></td>
+                                        <td th:text="${userDetails.getUsername()}"></td>
+                                        <td th:each="role : ${userDetails.getRoles()}"
+                                            th:text="${#strings.replace((role.role), 'ROLE_', '')}"></td>
+                                    </tr>
+                                    </tbody>
                                 </table>
                             </th>
                         </tr>
@@ -69,9 +78,6 @@
     </div>
 </div>
 
-
-<script type="text/javascript" th:src="@{/js/get.js}"></script>
-
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
         crossorigin="anonymous"></script>
@@ -81,7 +87,5 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
-
-
 </body>
 </html>

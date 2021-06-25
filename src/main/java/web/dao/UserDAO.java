@@ -1,8 +1,10 @@
 package web.dao;
 
+
 import web.models.User;
 
 import java.util.List;
+
 
 public interface UserDAO {
 
@@ -10,9 +12,9 @@ public interface UserDAO {
 
     void updateUser(User user);
 
-    void removeUser(int id);
+    void deleteUser(long id);
 
-    User getUserById(int id);
+    User getUserById(long id);
 
     User getUserByUsername(String username);
 

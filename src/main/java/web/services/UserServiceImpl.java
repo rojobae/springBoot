@@ -1,45 +1,47 @@
 package web.services;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import web.dao.UserDAO;
-import web.models.Role;
 import web.models.User;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
 
 @Service
-@Transactional
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserDAO userDAO;
+    private final UserDAO userDAO;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserServiceImpl(UserDAO userDAO) {
+        this.userDAO = userDAO;
+        this.passwordEncoder = new BCryptPasswordEncoder();
+    }
 
     @Override
     public void addUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userDAO.addUser(user);
     }
 
     @Override
     public void updateUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userDAO.updateUser(user);
     }
 
     @Override
-    public void removeUser(int id) {
-        userDAO.removeUser(id);
+    public void deleteUser(long id) {
+        userDAO.deleteUser(id);
     }
 
     @Override
-    public User getUserById(int id) {
+    public User getUserById(long id) {
         return userDAO.getUserById(id);
     }
 
@@ -49,18 +51,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserByUsername(String username) {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userDAO.getUserByUsername(username);
     }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userDAO.getUserByUsername(username);
-        Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
-        for (Role role : user.getRoles()) {
-            grantedAuthorities.add(new SimpleGrantedAuthority(role.getRole()));
-        }
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), grantedAuthorities);
-    }
-
 }

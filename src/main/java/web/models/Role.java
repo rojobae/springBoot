@@ -1,40 +1,34 @@
 package web.models;
 
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
 import java.util.Set;
 
+
 @Entity
-@Table(name = "roles")
 public class Role implements GrantedAuthority {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private int id;
+    private String role;
 
-    @Column(name = "name")
-    private String name;
-
-    @ManyToMany(mappedBy = "roles")
-    @Transient
-    @JsonIgnore
+    @ManyToMany
     private Set<User> users;
 
     public Role() {
     }
 
-    public Role(String roleName) {
-        if (roleName.contains("ROLE_ADMIN")) {
-            this.id = 1;
-        } else if (roleName.contains("ROLE_USER")) {
-            this.id = 2;
-        }
-        this.name = roleName;
+    public Role(int id, String role) {
+        this.id = id;
+        this.role = role;
+    }
+
+    @Override
+    public String getAuthority() {
+        return role;
     }
 
     public int getId() {
@@ -46,11 +40,11 @@ public class Role implements GrantedAuthority {
     }
 
     public String getRole() {
-        return name;
+        return role;
     }
 
-    public void setRole(String name) {
-        this.name = name;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public Set<User> getUsers() {
@@ -60,10 +54,4 @@ public class Role implements GrantedAuthority {
     public void setUsers(Set<User> users) {
         this.users = users;
     }
-
-    @Override
-    public String getAuthority() {
-        return name;
-    }
-
 }
